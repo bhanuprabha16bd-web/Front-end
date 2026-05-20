@@ -1,9 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+import requests
 
 app = FastAPI()
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,82 +12,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-users = [
-    {
-        "id": 1,
-        "name": "Bhanu",
-        "email": "Bhanu@example.com",
-        "role": "Frontend Developer",
-        "bio": "Passionate React developer",
-        "company": "Tech Solutions",
-        "website": "https://Bhanu.dev"
-    },
-    {
-        "id": 2,
-        "name": "Anu",
-        "email": "Anu@example.com",
-        "role": "Backend Developer",
-        "bio": "Python and API developer",
-        "company": "CodeCraft",
-        "website": "https://Anu.dev"
-    },
-    {
-        "id": 3,
-        "name": "vani",
-        "email": "vani@example.com",
-        "role": "Backend Developer",
-        "bio": "Python and API developer",
-        "company": "CodeCraft",
-        "website": "https://vani.dev"
-    }
-]
-
-
-class User(BaseModel):
-    name: str
-    email: str
-    role: str
-    bio: str
-    company: str
-    website: str
-
-
-@app.get("/")
-def home():
-    return {"message": "Backend Running Successfully"}
-
-
 @app.get("/users")
 def get_users():
-    return {"success": True, "data": users}
+    users = requests.get(
+        "https://jsonplaceholder.typicode.com/users"
+    ).json()
 
+    return users
 
-@app.get("/users/{user_id}")
-def get_user(user_id: int):
-    for user in users:
-        if user["id"] == user_id:
-            return {"success": True, "data": user}
+@app.get("/users/{id}")
+def get_user(id: int):
+    user = requests.get(
+        f"https://jsonplaceholder.typicode.com/users/{id}"
+    ).json()
 
-    raise HTTPException(status_code=404, detail="User not found")
-
-
-@app.post("/users")
-def create_user(user: User):
-    new_user = {
-        "id": len(users) + 1,
-        "name": user.name,
-        "email": user.email,
-        "role": user.role,
-        "bio": user.bio,
-        "company": user.company,
-        "website": user.website
-    }
-
-    users.append(new_user)
-
-    return {
-        "success": True,
-        "message": "User created successfully",
-        "data": new_user
-    }
+    return user
